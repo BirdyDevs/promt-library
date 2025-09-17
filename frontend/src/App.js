@@ -1,6 +1,20 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import examplePrompts from './examples';
 
 function App() {
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('prompts');
+      const hasPrompts = stored && JSON.parse(stored)?.length > 0;
+      if (!hasPrompts) {
+        localStorage.setItem('prompts', JSON.stringify(examplePrompts));
+        localStorage.setItem('prompts_seeded_at', new Date().toISOString());
+      }
+    } catch (_) {
+      // noop: if LocalStorage is unavailable, skip seeding
+    }
+  }, []);
+
   return (
     <div className="wrap">
       <header style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,marginBottom:16}}>
