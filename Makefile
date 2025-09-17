@@ -42,7 +42,7 @@ dev: ## Start development environment (build + up)
 	@echo "🚀 Services are starting up!"
 	@echo "📱 Frontend: http://localhost:3001"
 	@echo "🔧 Backend:  http://localhost:8001"
-	@echo "🗄️  Database: localhost:5432"
+	@echo "🗄️  Database: localhost:5433"
 	@echo ""
 	@echo "Use 'make logs' to see service logs"
 	@echo "Use 'make down' to stop all services"
@@ -84,3 +84,4 @@ prod: ## Start in production mode
 	@echo "Production services started!"
 	@echo "📱 Frontend: http://localhost:3001"
 	@echo "🔧 Backend:  http://localhost:8001"
+	@echo "🗄️  Database: localhost:5433"

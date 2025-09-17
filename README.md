@@ -36,7 +36,7 @@ docker-compose up --build -d
 ## 🌐 Access Points
 - **Frontend:** http://localhost:3001
 - **Backend API:** http://localhost:8001
-- **Database:** localhost:5432
+- **Database:** localhost:5433
 
 ## 🛠️ Development Commands
 
@@ -107,7 +107,7 @@ make status       # Show status of all services
 
 ## 🔧 Troubleshooting
 
-- **Port conflicts:** The application uses ports 3001 (frontend) and 8001 (backend)
+- **Port conflicts:** The application uses ports 3001 (frontend), 8001 (backend), and 5433 (database)
 - **Database issues:** Use `make db-reset` to reset the database
 - **Docker issues:** Use `make clean` to clean up Docker resources
 
