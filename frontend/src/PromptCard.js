@@ -1,13 +1,20 @@
 import React from 'react';
 
 function escapeHtml(s) {
+  if (!s || typeof s !== 'string') return '';
   return s.replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 }
 
 function tagChips(tags) {
   if (!tags) return null;
-  return tags.split(',').map(t => t.trim()).filter(Boolean).slice(0,10)
-    .map(t => <span className="tag" key={t}>{t}</span>);
+  if (typeof tags === 'string') {
+    return tags.split(',').map(t => t.trim()).filter(Boolean).slice(0,10)
+      .map(t => <span className="tag" key={t}>{t}</span>);
+  }
+  if (Array.isArray(tags)) {
+    return tags.slice(0,10).map(t => <span className="tag" key={t}>{t}</span>);
+  }
+  return null;
 }
 
 export default function PromptCard({ prompt, onOpen, onCopy }) {

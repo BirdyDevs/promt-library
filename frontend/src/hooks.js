@@ -1,14 +1,23 @@
 // Prompt-Model und LocalStorage-Hooks für die App
 import { useState, useCallback } from 'react';
+import examplePrompts from './examples';
 
 const LS_KEY = 'promptVault.v1';
 
 export function usePrompts() {
   const [prompts, setPrompts] = useState(() => {
     try {
-      return JSON.parse(localStorage.getItem(LS_KEY)) || [];
+      const stored = JSON.parse(localStorage.getItem(LS_KEY));
+      if (stored && stored.length > 0) {
+        return stored;
+      }
+      // If no stored prompts, load examples on first run
+      localStorage.setItem(LS_KEY, JSON.stringify(examplePrompts));
+      return examplePrompts;
     } catch {
-      return [];
+      // If error parsing, load examples
+      localStorage.setItem(LS_KEY, JSON.stringify(examplePrompts));
+      return examplePrompts;
     }
   });
 
