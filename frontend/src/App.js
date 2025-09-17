@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import './App.css';
 
+
 import Toolbar from './Toolbar';
 import PromptForm from './PromptForm';
+import PromptList from './PromptList';
 import { usePrompts, now, uid } from './hooks';
 
 
@@ -10,6 +12,9 @@ function App() {
   const { prompts, upsert, remove } = usePrompts();
   const [current, setCurrent] = useState(null); // aktueller Prompt im Formular
   const [status, setStatus] = useState({ label: 'Entwurf', kind: 'neutral' });
+  const [search, setSearch] = useState('');
+  const [filterModel, setFilterModel] = useState('');
+  const [sort, setSort] = useState('updated_desc');
 
   // Toolbar-Handler
   const handleExport = () => {
@@ -85,6 +90,16 @@ function App() {
     setStatus({ label: 'Entwurf', kind: 'neutral' });
   };
 
+  // Handler für PromptCard
+  const handleOpenPrompt = (id) => {
+    const it = prompts.find(x => x.id === id);
+    if (it) setCurrent(it);
+    setStatus({ label: 'Bearbeitung', kind: 'neutral' });
+  };
+
+  // Modell-Filter-Optionen aus Prompts ableiten
+  const modelOptions = Array.from(new Set(prompts.map(p => p.model))).filter(Boolean);
+
   return (
     <div className="wrap">
       <header style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,marginBottom:16}}>
@@ -122,21 +137,48 @@ function App() {
         <section className="card">
           <div className="card-header">
             <div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap',width:'100%'}}>
-              {/* Suchfeld, Filter, Sortierung folgen */}
-              <input type="search" id="q" placeholder="Suchen nach Titel, Tags, Text… (⌘/Ctrl+K)" />
-              <select id="filter-model" title="Nach Modell filtern"><option value="">Modell: alle</option></select>
-              <select id="sort" title="Sortierung">
+              <input
+                type="search"
+                id="q"
+                placeholder="Suchen nach Titel, Tags, Text… (⌘/Ctrl+K)"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+              />
+              <select
+                id="filter-model"
+                title="Nach Modell filtern"
+                value={filterModel}
+                onChange={e => setFilterModel(e.target.value)}
+              >
+                <option value="">Modell: alle</option>
+                {modelOptions.map(opt => <option key={opt} value={opt}>Modell: {opt}</option>)}
+              </select>
+              <select
+                id="sort"
+                title="Sortierung"
+                value={sort}
+                onChange={e => setSort(e.target.value)}
+              >
                 <option value="updated_desc">Neueste zuerst</option>
                 <option value="title_asc">Titel A–Z</option>
                 <option value="model_asc">Modell A–Z</option>
               </select>
-              <button className="btn secondary" id="btn-clear-filters">Filter zurücksetzen</button>
+              <button
+                className="btn secondary"
+                id="btn-clear-filters"
+                onClick={() => { setSearch(''); setFilterModel(''); setSort('updated_desc'); }}
+              >Filter zurücksetzen</button>
             </div>
           </div>
           <div className="card-body">
-            {/* PromptList-Komponente folgt */}
-            <div id="list" className="list"></div>
-            <div id="empty" className="empty" style={{display:'none'}}>Noch keine Prompts. Lege links den ersten an! ✨</div>
+            <PromptList
+              prompts={prompts}
+              onOpen={handleOpenPrompt}
+              onCopy={handleCopy}
+              search={search}
+              filterModel={filterModel}
+              sort={sort}
+            />
           </div>
         </section>
       </div>
