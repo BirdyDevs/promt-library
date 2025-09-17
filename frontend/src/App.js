@@ -1,6 +1,27 @@
-import React from 'react';
+
+import React, { useState } from 'react';
+import './App.css';
+import Toolbar from './Toolbar';
+import { usePrompts } from './hooks';
 
 function App() {
+  // Prompts-Logik (wird später erweitert)
+  const { prompts, setPrompts, upsert, remove, reset } = usePrompts();
+
+  // Toolbar-Handler (Platzhalter)
+  const handleExport = () => {
+    // TODO: Export-Logik
+    alert('Export!');
+  };
+  const handleImport = () => {
+    // TODO: Import-Logik
+    alert('Import!');
+  };
+  const handleNew = () => {
+    // TODO: Formular leeren
+    alert('Neuer Prompt!');
+  };
+
   return (
     <div className="wrap">
       <header style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,marginBottom:16}}>
@@ -8,10 +29,7 @@ function App() {
           <h1>🗂️ AI Prompt Katalog</h1>
           <div className="muted">Katalogisiere, durchsuche und <strong>teile</strong> Prompts. Alles läuft lokal im Browser (LocalStorage).</div>
         </div>
-        {/* Toolbar-Komponente */}
-        <div className="toolbar">
-          {/* Buttons folgen */}
-        </div>
+        <Toolbar onExport={handleExport} onImport={handleImport} onNew={handleNew} />
       </header>
 
       <div className="grid">
@@ -53,5 +71,4 @@ function App() {
   );
 }
 
-import './App.css';
 export default App;
