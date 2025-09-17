@@ -1,25 +1,89 @@
 
 import React, { useState } from 'react';
 import './App.css';
+
 import Toolbar from './Toolbar';
-import { usePrompts } from './hooks';
+import PromptForm from './PromptForm';
+import { usePrompts, now, uid } from './hooks';
+
 
 function App() {
-  // Prompts-Logik (wird später erweitert)
   const { prompts, setPrompts, upsert, remove, reset } = usePrompts();
+  const [current, setCurrent] = useState(null); // aktueller Prompt im Formular
+  const [status, setStatus] = useState({ label: 'Entwurf', kind: 'neutral' });
 
-  // Toolbar-Handler (Platzhalter)
+  // Toolbar-Handler
   const handleExport = () => {
-    // TODO: Export-Logik
-    alert('Export!');
+    const data = JSON.stringify(prompts, null, 2);
+    const blob = new Blob([data], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'prompts.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
   };
   const handleImport = () => {
-    // TODO: Import-Logik
-    alert('Import!');
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json,application/json';
+    input.onchange = async () => {
+      const file = input.files[0];
+      if (!file) return;
+      const text = await file.text();
+      try {
+        const arr = JSON.parse(text);
+        const nowIso = now();
+        const items = Array.isArray(arr) ? arr : [];
+        const existing = prompts;
+        for (const it of items) {
+          const dup = existing.find(x => x.title === it.title && x.prompt === it.prompt);
+          it.id = dup ? dup.id : uid();
+          it.createdAt = dup ? dup.createdAt : nowIso;
+          it.updatedAt = nowIso;
+          upsert(it);
+        }
+        setStatus({ label: `Import abgeschlossen (${items.length}) ✅`, kind: 'ok' });
+      } catch {
+        setStatus({ label: 'Ungültige Datei ❌', kind: 'warn' });
+      }
+    };
+    input.click();
   };
   const handleNew = () => {
-    // TODO: Formular leeren
-    alert('Neuer Prompt!');
+    setCurrent(null);
+    setStatus({ label: 'Entwurf', kind: 'neutral' });
+  };
+
+  // PromptForm-Handler
+  const handleSave = (item) => {
+    upsert(item);
+    setCurrent(item);
+    setStatus({ label: 'Gespeichert', kind: 'ok' });
+  };
+  const handleDelete = (id) => {
+    if (!id) return;
+    if (window.confirm('Diesen Prompt wirklich löschen?')) {
+      remove(id);
+      setCurrent(null);
+      setStatus({ label: 'Gelöscht', kind: 'warn' });
+    }
+  };
+  const handleCopy = (text) => {
+    if (!text) return;
+    navigator.clipboard?.writeText(text).then(() => setStatus({ label: 'Prompt kopiert ✅', kind: 'ok' }));
+  };
+  const handleShare = (item) => {
+    if (!item.title || !item.prompt) {
+      setStatus({ label: 'Bitte Titel & Prompt ausfüllen.', kind: 'warn' });
+      return;
+    }
+    const payload = encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(item)))));
+    const url = window.location.origin + window.location.pathname + '#share=' + payload;
+    navigator.clipboard?.writeText(url).then(() => setStatus({ label: 'Link in Zwischenablage.', kind: 'ok' }));
+  };
+  const handleReset = () => {
+    setCurrent(null);
+    setStatus({ label: 'Entwurf', kind: 'neutral' });
   };
 
   return (
@@ -36,11 +100,21 @@ function App() {
         {/* Editor links */}
         <section className="card" id="editor">
           <div className="card-header">
-            <strong id="form-title">Prompt erstellen</strong>
-            <div className="pill"><span id="status-dot">●</span><span id="status-text">Entwurf</span></div>
+            <strong id="form-title">{current ? 'Prompt bearbeiten' : 'Prompt erstellen'}</strong>
+            <div className="pill"><span id="status-dot" style={{ color: status.kind === 'ok' ? 'var(--ok)' : status.kind === 'warn' ? 'var(--danger)' : 'var(--brand)' }}>●</span><span id="status-text">{status.label}</span></div>
           </div>
           <div className="card-body">
-            {/* PromptForm-Komponente folgt */}
+            <PromptForm
+              value={current}
+              onChange={setCurrent}
+              onSave={handleSave}
+              onDelete={handleDelete}
+              onCopy={handleCopy}
+              onShare={handleShare}
+              onReset={handleReset}
+              status={status}
+              setStatus={setStatus}
+            />
             <div className="footer">Tipp: Mit <strong>Export JSON</strong> kannst du eine Datei sichern & mit anderen teilen. Über den <strong>Teilen</strong>-Button lässt sich ein einzelner Prompt als URL teilen (Hash‑Link).</div>
           </div>
         </section>
